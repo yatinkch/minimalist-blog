@@ -6,117 +6,34 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 const WRITINGS = [
   {
-    id: "systems-outlive-builders",
-    date: "7 Mar 2026",
-    title: "On building systems that outlive their builders",
-    tag: "systems",
-    likes: 24,
-    body: `Every system I've designed carries an assumption about the future that I can't verify. A tax compliance engine assumes regulations will evolve in certain directions. A document pipeline assumes the shape of human attention will stay roughly constant. An ingestion architecture assumes that the data flowing through it tomorrow will rhyme with the data flowing through it today.
+    id: "product-sense-intuition",
+    date: "Apr 2026",
+    title: "Product Sense = Intuition",
+    tag: "product",
+    likes: 0,
+    body: `For years, the phrase "Product Sense" annoyed me. In PM circles, it's revered as this mythical, innate quality. You either possess it or you don't. And it never sat right with me.
 
-None of these assumptions are safe. And yet — you have to make them. That's the paradox of systems work. You're building for a future you cannot see, using materials forged in a present you only partially understand.
+Over 2 years at ClearTax, working on GST compliance products, I tried understanding it consciously. And I realised that it is a glorified term for deep intuition. Nothing glamorous. You develop deep intuition by repeated exposure to a particular world until your brain starts predicting how that world behaves.
 
-The honest response isn't to pretend you've figured it out. It's to build the seams visible. Make the joints obvious. Document not just what you decided, but what you assumed — so the next person who inherits this thing knows exactly where the load-bearing beliefs are, and where to push when the world shifts beneath them.
+When I joined Cleartax, my intuition for industry + specific domain was hovering ~30%. GST rules, enterprise tax workflows, how a tax team weighs risk before buying anything. These were completely different contours which I hadn't seen in any of my previous jobs. For 6 months, I didn't deliver any major impact. I didn't pretend to be the archetypal PM who knows what to ship by default and has answers to all the questions. Instead, I became a CSM, a support guy, a sales guy, and an engineer's best friend. I pitched the product and handled objections on the ground. I filed GST returns alongside customers. I sat with engineers solving tickets. And while on this journey, I catalogued the recurring failures and the tiny, quiet victories.
 
-I think about this a lot when I watch teams build software. The best systems aren't the cleverest ones. They're the ones that are easiest to be wrong in — where failure is cheap, visible, and instructive. That's a design philosophy, but it's also, I think, a philosophy of living.`,
-  },
-  {
-    id: "gap-knowing-understanding",
-    date: "22 Feb 2026",
-    title: "The gap between knowing and understanding",
-    tag: "ai",
-    likes: 41,
-    body: `AI can surface every GST filing rule in milliseconds. It can cross-reference a hundred returns, flag discrepancies, generate reports that would take a human team days. I build these systems. I believe in them.
+And over time, the map showed up.
 
-But here's what keeps me honest: understanding why a particular CFO hesitates before signing a compliance report — that's a different kind of intelligence entirely. It lives in context, in history, in the unspoken politics of an organisation. No embedding captures it. No retrieval system fetches it.
+When I do the meta synthesis of what actually built my judgment, that traces back to 2 things:
 
-I keep returning to this gap because I think it's where the most interesting work in AI actually lives. Not in making models bigger or faster — though that matters — but in designing the seams between what machines know and what humans understand. The interface layer. The translation zone.
+One is environmental depth. How far you dig into the system you're playing in. For me, that meant learning why GST is written the way it is, where the systems break down, and where strategy has to bend to ground reality. That's also where you start seeing users and their behavioural patterns clearly. Not their demographics, but their real anxiety, their switching moment, how a single feature shifts lifetime value or blows up cost.
 
-When I write a report for a CFO, I'm not just presenting data. I'm constructing a narrative that respects what they already know, fills in what they don't, and — this is the hard part — doesn't make them feel like the machine is smarter than they are. Because it isn't. It's faster. That's different.
+The other is product craft. The instinct that software is less about building and more about maintaining. The ability to smell complexity before it hits a sprint. Knowing that in enterprise products, a feature isn't done when it ships. A PM who's spent years in fintech won't understand healthcare on day one, but they'll know which structural questions to ask about (dependencies, incentives, where systems fracture under load). Because they've seen enough systems to recognize the shape of the problem. Craft residue is what survives a context switch. The more systems you've lived inside, the more of it you carry.
 
-The companies that will win in AI aren't the ones with the best models. They're the ones that understand this gap and build bridges across it — with humility, with design, with language that treats the human on the other side as a partner, not a consumer.`,
-  },
-  {
-    id: "small-observations-large-datasets",
-    date: "14 Feb 2026",
-    title: "Small observations from large datasets",
-    tag: "observation",
-    likes: 33,
-    body: `Spent the morning staring at compliance patterns across two hundred companies. When you look at enough data, something strange happens — the numbers stop being numbers and start being stories.
+More situations make your sense stronger. Success shows you what worked. Failure acts as a feedback. I also sped this up by partnering tightly with peers across teams and functions. Observing and participating in my sister teams' decision making process helped me learn without being neck deep in situations.
 
-A missed filing in Q3 is almost never a careless mistake. Trace it back and you'll find a human event: a key person left the team, a system migration ate three weeks, a leadership change reshuffled priorities. The data records the absence, but the absence is always a shadow of something real.
-
-I think this is what people miss about working with data at scale. They think the point is to find patterns. It is — but the interesting patterns are almost never the ones the dashboard surfaces. The interesting patterns are the ones that resist categorisation. The outlier that doesn't fit. The company that's compliant in every dimension except one, and that one exception tells you more about their organisation than everything else combined.
-
-Data doesn't lie, but it omits constantly. And what it omits is usually the thing that matters most. This is why I think the future of analytics isn't more automation — it's better questions. Machines can count. Humans can wonder. The art is in connecting the two without letting either dominate.
-
-Every time I build a report, I try to leave room for the reader's own intelligence. Show enough to orient them, hide nothing, but don't interpret everything for them. Respect the gap.`,
-  },
-  {
-    id: "philosophy-product-decisions",
-    date: "3 Jan 2026",
-    title: "What philosophy taught me about product decisions",
-    tag: "philosophy",
-    likes: 57,
-    body: `First principles thinking isn't a Silicon Valley invention. It's Aristotle. It's Nagarjuna dismantling assumptions in second-century India. It's every intellectual tradition that dared to ask: what remains when you strip away everything you merely believe?
-
-In product work, I find this question uncomfortable and essential. You sit in a room where everyone agrees on the roadmap, and you ask — but why this feature? Why now? Why for this user? And if you follow the thread honestly, you often end up somewhere simpler and more uncomfortable than where you started.
-
-Most product decisions aren't hard because the options are bad. They're hard because the good options require you to admit something inconvenient — that you don't have enough data, that the user doesn't want what you assumed, that the technically elegant solution isn't the one that ships.
-
-Philosophy taught me to sit with that discomfort instead of rushing past it. To hold two contradictory ideas without forcing a resolution. To trust that clarity comes from patience, not from speed.
-
-I also think there's something deeply philosophical about building products for other people. You're making bets about human behaviour with incomplete information, on a timeline that doesn't forgive hesitation. It's Kierkegaard's leap — but with sprint cycles. And the honest product thinker admits they're leaping, even when the Jira ticket makes it look like a straight line.`,
-  },
-  {
-    id: "honesty-incomplete-things",
-    date: "28 Dec 2025",
-    title: "The honesty of incomplete things",
-    tag: "life",
-    likes: 68,
-    body: `I used to wait until something was perfect before sharing it. A document had to be airtight. An idea fully formed. A piece of writing polished to the point where no one could find a crack in it.
-
-That instinct comes from a good place — respect for the reader, for the audience, for the craft. But somewhere along the way, I realised it was also a form of hiding. If you only show finished things, no one sees how you think. They see what you've concluded. And conclusions, divorced from the mess that produced them, are oddly lifeless.
-
-Now I try to share things mid-thought. Not carelessly — there's a difference between incomplete and sloppy. An incomplete thing can still be clear about what it knows, honest about what it doesn't, and generous enough to let the reader finish the thought in their own direction.
-
-I think the best writing, the best products, the best conversations all share this quality. They don't close every door. They leave room. Not because the author was lazy, but because they trusted the person on the other end enough to leave the last mile unwalked.
-
-This blog is an exercise in that trust. These pieces are not finished thoughts. They're observations — caught mid-flight, pinned gently to the page, still twitching with possibility. If something here makes you think further than I did, then it worked.`,
+To be honest, there is no scale to measure it. I make mistakes, my leaders make mistakes even though they have a better sense. So, I take it as a life long art and in the AI world, this will deeply matter. One thing I understand is that intuition cannot be handed out. It is built by getting lost, by talking to the people, by watching where decisions actually land. You don't need a year to "get it". What you need is the right kind of exposure. Deep, ugly, unglamorous exposure with the product and the people who keep it running. Do that long enough, and the mystery will unfold in your own brain.`,
   },
 ];
 
-const PORTFOLIO = [
-  {
-    id: "p1", title: "AI-Powered GST Compliance Reporting", role: "Product Lead", company: "ClearTax", period: "2025 – Present",
-    tags: ["AI/ML", "Enterprise", "Compliance"],
-    summary: "Designed and shipped an AI-driven compliance reporting system serving enterprise CFOs and tax teams. Built a multi-agent pipeline that generates dual-audience HTML reports — executive summaries free of jargon for CFOs, and granular technical breakdowns for tax practitioners.",
-    impact: "Reduced report generation from 3 days to 45 minutes. Adopted by Fortune 500 clients across multiple GSTINs.",
-    insight: "The hardest problem wasn't technical — it was designing AI output that respected the reader's intelligence instead of overwhelming them with data.",
-  },
-  {
-    id: "p2", title: "Purchase Ingestion & Document Lifecycle Redesign", role: "Product Architect", company: "ClearTax", period: "2025",
-    tags: ["Architecture", "Systems Design", "Enterprise"],
-    summary: "Led a from-scratch redesign of ClearTax's purchase document management system. Converged on a 2-ID matching architecture with dual-hash change detection, binary filing locks, and a customer badge system for post-filing modifications.",
-    impact: "Eliminated duplicate document conflicts across 200+ enterprise accounts. Reduced filing errors by 40%.",
-    insight: "The key decision was choosing visible seams over clever abstractions — making the system's assumptions explicit so teams could debug reality, not just code.",
-  },
-  {
-    id: "p3", title: "Enterprise Customer Health & Renewal Intelligence", role: "Product Manager", company: "ClearTax", period: "2024 – 2025",
-    tags: ["Analytics", "Customer Success", "GTM"],
-    summary: "Built an analytical layer mapping opt-in status, data availability, and engagement signals across the enterprise customer base. Created actionable dashboards that armed Account Managers and CSMs with renewal intelligence.",
-    impact: "Improved renewal conversation quality. Identified at-risk accounts 6 weeks earlier than previous process.",
-    insight: "Data only becomes intelligence when it's shaped for the person who needs to act on it. A dashboard nobody opens is just a database with a UI.",
-  },
-  {
-    id: "p4", title: "CFO Narrative Framework for Indian Tax Compliance", role: "Product Strategist", company: "ClearTax", period: "2025",
-    tags: ["Strategy", "Content", "Executive Communication"],
-    summary: "Authored an intellectual framework reframing GST compliance as a strategic system for Indian Fortune 500 CFOs. Grounded in the full domestic tax ecosystem — GST, Income Tax, TDS, MCA cross-referencing.",
-    impact: "Adopted as ClearTax's enterprise positioning narrative. Used in C-suite conversations across 15+ accounts.",
-    insight: "CFOs don't want to be told about compliance. They want to be shown how compliance connects to the decisions that keep them up at night.",
-  },
-];
+const PORTFOLIO = [];
 
-const TAGS = ["all", "ai", "philosophy", "systems", "observation", "life"];
+const TAGS = ["all", "product"];
 const THINKING_ABOUT = [
   "whether compliance can be beautiful",
   "the ethics of automated decisions",
@@ -128,11 +45,7 @@ const THINKING_ABOUT = [
 
 const ARTICLE_IDX = Object.fromEntries(WRITINGS.map((w, i) => [w.id, i]));
 const TAG_POS = {
-  systems:     { x: 0.50, y: 0.18 },
-  ai:          { x: 0.20, y: 0.45 },
-  observation: { x: 0.60, y: 0.62 },
-  philosophy:  { x: 0.82, y: 0.38 },
-  life:        { x: 0.35, y: 0.78 },
+  product: { x: 0.50, y: 0.40 },
 };
 function loadConst() {
   try {
@@ -442,7 +355,17 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
   const [height, setHeight] = useState(0);
   const isLiked = likedSet.has(w.id);
   const count = likeCounts[w.id] || w.likes;
-  const preview = w.body.split("\n\n")[0].slice(0, 130) + "…";
+  const preview = w.comingSoon ? "" : w.body.split("\n\n")[0].slice(0, 130) + "…";
+
+  if (w.comingSoon) {
+    return (
+      <div style={{ padding: "40px 0", borderBottom: "1px solid var(--border)" }}>
+        <p style={{ fontFamily: "var(--body)", fontSize: 16, fontStyle: "italic", color: "var(--text-tertiary)", fontWeight: 300 }}>
+          Coming soon...
+        </p>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (bodyRef.current) setHeight(bodyRef.current.scrollHeight);
@@ -636,54 +559,16 @@ function PortfolioPage() {
         </h1>
       </FadeIn>
       <FadeIn delay={150}>
-        <p style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300, maxWidth: 540, marginBottom: 20 }}>
-          A selection of product work — systems designed, problems reframed, things shipped. Each one taught me something I couldn't have learned by reading about it.
-        </p>
-        <p style={{ fontFamily: "var(--body)", fontSize: 15, lineHeight: 1.75, color: "var(--text-tertiary)", fontWeight: 300, fontStyle: "italic", maxWidth: 540, marginBottom: 56 }}>
-          I'm most proud not of the outcomes, but of the thinking that got there.
+        <p style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300, maxWidth: 540, marginBottom: 56, fontStyle: "italic" }}>
+          Coming soon...
         </p>
       </FadeIn>
-
-      {PORTFOLIO.map((p, i) => {
-        const isOpen = expandedId === p.id;
-        return (
-          <FadeIn key={p.id} delay={250 + i * 100}>
-            <div onClick={() => setExpandedId(isOpen ? null : p.id)} style={{
-              padding: "36px 0", borderTop: i === 0 ? "1px solid var(--border)" : "none",
-              borderBottom: "1px solid var(--border)", cursor: "pointer",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-tertiary)", letterSpacing: "0.04em" }}>
-                <span>{p.company}</span><span style={{ opacity: 0.3 }}>·</span>
-                <span>{p.role}</span><span style={{ opacity: 0.3 }}>·</span><span>{p.period}</span>
-              </div>
-              <h3 className="writing-title-hover" style={{ fontFamily: "var(--serif)", fontSize: 25, fontWeight: 400, lineHeight: 1.3, color: "var(--text)", marginBottom: 12, transition: "color 0.3s" }}>{p.title}</h3>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: isOpen ? 20 : 0 }}>
-                {p.tags.map(t => (
-                  <span key={t} style={{ fontFamily: "var(--mono)", fontSize: 10, padding: "3px 10px", borderRadius: 100, background: "var(--tag-bg)", color: "var(--accent)", letterSpacing: "0.02em" }}>{t}</span>
-                ))}
-              </div>
-              <div style={{ maxHeight: isOpen ? 600 : 0, opacity: isOpen ? 1 : 0, overflow: "hidden", transition: "max-height 0.6s ease, opacity 0.5s ease" }}>
-                <div style={{ fontFamily: "var(--body)", fontSize: 15.5, lineHeight: 1.85, color: "var(--text-secondary)", fontWeight: 300, marginTop: 8 }}>
-                  <p style={{ marginBottom: 18 }}>{p.summary}</p>
-                  <div style={{ background: "var(--bg-card)", borderRadius: 8, padding: "18px 22px", marginBottom: 18, border: "1px solid var(--border-light)" }}>
-                    <div style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-tertiary)", marginBottom: 8 }}>Impact</div>
-                    <p style={{ fontSize: 15, color: "var(--text)", fontWeight: 400 }}>{p.impact}</p>
-                  </div>
-                  <div style={{ paddingLeft: 16, borderLeft: "2px solid var(--accent)", marginTop: 16 }}>
-                    <p style={{ fontFamily: "var(--body)", fontSize: 15, fontStyle: "italic", color: "var(--text-secondary)", lineHeight: 1.75 }}>{p.insight}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </FadeIn>
-        );
-      })}
 
       <FadeIn delay={700}>
         <div style={{ marginTop: 64, padding: 32, background: "var(--bg-card)", borderRadius: 10, border: "1px solid var(--border-light)", textAlign: "center" }}>
           <p style={{ fontFamily: "var(--serif)", fontSize: 20, fontWeight: 400, color: "var(--text)", marginBottom: 10 }}>Want to work together?</p>
           <p style={{ fontFamily: "var(--body)", fontSize: 14.5, color: "var(--text-tertiary)", fontWeight: 300, marginBottom: 20 }}>I'm always open to conversations about product, systems, or ideas worth exploring.</p>
-          <a href="mailto:yatin.kumar@clear.in" className="react-btn" style={{
+          <a href="mailto:yatin.choudhary1@gmail.com" className="react-btn" style={{
             fontFamily: "var(--mono)", fontSize: 12, color: "var(--accent)", textDecoration: "none",
             letterSpacing: "0.04em", padding: "10px 24px", border: "1px solid var(--accent)",
             borderRadius: 100, display: "inline-block",
@@ -871,14 +756,12 @@ export default function Blog() {
             <div style={{ background: "var(--bg-card)", borderRadius: 10, padding: "40px 36px", border: "1px solid var(--border-light)" }}>
               <h2 style={{ fontFamily: "var(--serif)", fontSize: 26, fontWeight: 400, marginBottom: 20, color: "var(--text)" }}>Hello.</h2>
               <div style={{ fontFamily: "var(--body)", fontSize: 15.5, lineHeight: 1.85, color: "var(--text-secondary)", fontWeight: 300 }}>
-                <p style={{ marginBottom: 16 }}>I'm a product manager in India, building AI-powered compliance systems at ClearTax. My days live at the intersection of messy real-world data, enterprise software, and the humans who have to make sense of it all.</p>
-                <p style={{ marginBottom: 16 }}>Before product, I cared about philosophy. I still do. The best systems thinking borrows from people who've asked hard questions for millennia — Aristotle, Nagarjuna, Wittgenstein, and the long lineage of minds who refused the obvious answer.</p>
+                <p style={{ marginBottom: 16 }}>I'm Yatin — a product manager in India, building AI-powered compliance systems at ClearTax. My days live at the intersection of messy real-world data, enterprise software, and the humans who have to make sense of it all.</p>
                 <p>This is where I think out loud. Observations, not conclusions.</p>
               </div>
               <div style={{ marginTop: 28, display: "flex", gap: 24, fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.04em" }}>
-                {["twitter", "linkedin", "email"].map(l => (
-                  <a key={l} href="#" style={{ color: "var(--accent)", textDecoration: "none" }}>{l}</a>
-                ))}
+                <a href="https://www.linkedin.com/in/yatinkch/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", textDecoration: "none" }}>linkedin</a>
+                <a href="mailto:yatin.choudhary1@gmail.com" style={{ color: "var(--accent)", textDecoration: "none" }}>email</a>
               </div>
             </div>
           </div>
