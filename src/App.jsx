@@ -645,13 +645,23 @@ export default function Blog() {
   useEffect(() => {
     const init = {};
     WRITINGS.forEach(w => { init[w.id] = w.likes; });
+    // Load liked state from localStorage
     try {
-      const saved = JSON.parse(localStorage.getItem("likeCounts") || "null");
-      if (saved) WRITINGS.forEach(w => { if (saved[w.id] !== undefined) init[w.id] = saved[w.id]; });
       const savedLiked = JSON.parse(localStorage.getItem("likedSet") || "null");
       if (savedLiked) setLikedSet(new Set(savedLiked));
     } catch {}
     setLikeCounts(init);
+    // Fetch global like counts from API
+    fetch("https://2ioqhsfec7.execute-api.us-east-1.amazonaws.com/likes")
+      .then(r => r.json())
+      .then(counts => {
+        setLikeCounts(lc => {
+          const merged = { ...lc };
+          for (const [id, count] of Object.entries(counts)) merged[id] = count;
+          return merged;
+        });
+      })
+      .catch(() => {});
   }, []);
 
   // Deep-link: only set on initial load
@@ -668,12 +678,18 @@ export default function Blog() {
       const next = new Set(prev);
       const wasLiked = next.has(id);
       if (wasLiked) next.delete(id); else next.add(id);
-      setLikeCounts(lc => {
-        const updated = { ...lc, [id]: lc[id] + (wasLiked ? -1 : 1) };
-        try { localStorage.setItem("likeCounts", JSON.stringify(updated)); } catch {}
-        return updated;
-      });
+      // Optimistic UI update
+      setLikeCounts(lc => ({ ...lc, [id]: lc[id] + (wasLiked ? -1 : 1) }));
+      // Persist liked state locally
       try { localStorage.setItem("likedSet", JSON.stringify([...next])); } catch {}
+      // Sync with API
+      fetch(`https://2ioqhsfec7.execute-api.us-east-1.amazonaws.com/likes/${encodeURIComponent(id)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(wasLiked ? { action: "unlike" } : {}),
+      }).then(r => r.json()).then(data => {
+        setLikeCounts(lc => ({ ...lc, [id]: data.likeCount }));
+      }).catch(() => {});
       return next;
     });
   }, []);
