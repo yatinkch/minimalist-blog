@@ -645,6 +645,12 @@ export default function Blog() {
   useEffect(() => {
     const init = {};
     WRITINGS.forEach(w => { init[w.id] = w.likes; });
+    try {
+      const saved = JSON.parse(localStorage.getItem("likeCounts") || "null");
+      if (saved) WRITINGS.forEach(w => { if (saved[w.id] !== undefined) init[w.id] = saved[w.id]; });
+      const savedLiked = JSON.parse(localStorage.getItem("likedSet") || "null");
+      if (savedLiked) setLikedSet(new Set(savedLiked));
+    } catch {}
     setLikeCounts(init);
   }, []);
 
@@ -662,7 +668,12 @@ export default function Blog() {
       const next = new Set(prev);
       const wasLiked = next.has(id);
       if (wasLiked) next.delete(id); else next.add(id);
-      setLikeCounts(lc => ({ ...lc, [id]: lc[id] + (wasLiked ? -1 : 1) }));
+      setLikeCounts(lc => {
+        const updated = { ...lc, [id]: lc[id] + (wasLiked ? -1 : 1) };
+        try { localStorage.setItem("likeCounts", JSON.stringify(updated)); } catch {}
+        return updated;
+      });
+      try { localStorage.setItem("likedSet", JSON.stringify([...next])); } catch {}
       return next;
     });
   }, []);
