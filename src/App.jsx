@@ -576,7 +576,7 @@ function PortfolioPage() {
         <div style={{ marginTop: 64, padding: 32, background: "var(--bg-card)", borderRadius: 10, border: "1px solid var(--border-light)", textAlign: "center" }}>
           <p style={{ fontFamily: "var(--serif)", fontSize: 20, fontWeight: 400, color: "var(--text)", marginBottom: 10 }}>Want to work together?</p>
           <p style={{ fontFamily: "var(--body)", fontSize: 14.5, color: "var(--text-tertiary)", fontWeight: 300, marginBottom: 20 }}>I'm always open to conversations about product, systems, or ideas worth exploring.</p>
-          <a href="mailto:yatin.choudhary1@gmail.com" className="react-btn" style={{
+          <a href="https://mail.google.com/mail/?view=cm&to=yatin.choudhary1@gmail.com" className="react-btn" style={{
             fontFamily: "var(--mono)", fontSize: 12, color: "var(--accent)", textDecoration: "none",
             letterSpacing: "0.04em", padding: "10px 24px", border: "1px solid var(--accent)",
             borderRadius: 100, display: "inline-block",
@@ -797,7 +797,7 @@ export default function Blog() {
               </div>
               <div style={{ marginTop: 28, display: "flex", gap: 24, fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.04em" }}>
                 <a href="https://www.linkedin.com/in/yatinkch/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", textDecoration: "none" }}>linkedin</a>
-                <a href="mailto:yatin.choudhary1@gmail.com" style={{ color: "var(--accent)", textDecoration: "none" }}>email</a>
+                <a href="https://mail.google.com/mail/?view=cm&to=yatin.choudhary1@gmail.com" style={{ color: "var(--accent)", textDecoration: "none" }}>email</a>
               </div>
             </div>
           </div>
