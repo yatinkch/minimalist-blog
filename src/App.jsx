@@ -43,6 +43,12 @@ const THINKING_ABOUT = [
   "edges where data ends and intuition begins",
 ];
 
+// Deterministic seed per post ID — gives a consistent number between 20-50
+function seedLikes(id) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
+  return 20 + Math.abs(hash) % 31;
+}
 const ARTICLE_IDX = Object.fromEntries(WRITINGS.map((w, i) => [w.id, i]));
 const TAG_POS = {
   product: { x: 0.50, y: 0.40 },
@@ -334,14 +340,16 @@ function AnimatedHeart({ isLiked, size = 16 }) {
    ═══════════════════════════════════════════ */
 
 function shareOnTwitter(w) {
-  const text = `"${w.title}" — a quiet observation worth reading.`;
-  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(`https://yatinkumar.blog/#${w.id}`)}`, "_blank");
+  const text = `"${w.title}" — a quiet observation worth reading.\n\n${w.body.split("\n\n")[0].slice(0, 200)}...`;
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(`https://yatinkch.com/#${w.id}`)}`, "_blank");
 }
 function shareOnLinkedIn(w) {
-  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://yatinkumar.blog/#${w.id}`)}`, "_blank");
+  const snippet = w.body.split("\n\n")[0].slice(0, 200);
+  const text = `"${w.title}"\n\n${snippet}...\n\nRead more:`;
+  window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text + " https://yatinkch.com/#" + w.id)}`, "_blank");
 }
 function copyLink(w, setCopiedId) {
-  navigator.clipboard?.writeText(`https://yatinkumar.blog/#${w.id}`);
+  navigator.clipboard?.writeText(`https://yatinkch.com/#${w.id}`);
   setCopiedId(w.id);
   setTimeout(() => setCopiedId(null), 1500);
 }
@@ -644,15 +652,16 @@ export default function Blog() {
 
   useEffect(() => {
     const init = {};
-    WRITINGS.forEach(w => { init[w.id] = w.likes; });
+    WRITINGS.forEach(w => { init[w.id] = seedLikes(w.id); });
     // Load liked state from localStorage
     try {
       const savedLiked = JSON.parse(localStorage.getItem("likedSet") || "null");
       if (savedLiked) setLikedSet(new Set(savedLiked));
     } catch {}
     setLikeCounts(init);
-    // Fetch global like counts from API
-    fetch("https://2ioqhsfec7.execute-api.us-east-1.amazonaws.com/likes")
+    // Fetch global like counts from API (init seeds new posts)
+    const ids = WRITINGS.map(w => w.id).join(",");
+    fetch(`https://2ioqhsfec7.execute-api.us-east-1.amazonaws.com/likes?init=${ids}`)
       .then(r => r.json())
       .then(counts => {
         setLikeCounts(lc => {
