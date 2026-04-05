@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useReadingSpeed, ReadingInsightsNudge, InsightsPanel, ShareCardModal, AutoScrollToggle } from "./ReadingInsights";
 
 /* ═══════════════════════════════════════════
    DATA
@@ -358,12 +359,21 @@ function copyLink(w, setCopiedId) {
    WRITING CARD — expand-in-place
    ═══════════════════════════════════════════ */
 
-function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, copiedId, setCopiedId }) {
+function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, copiedId, setCopiedId, autoScrollRef }) {
   const bodyRef = useRef(null);
   const [height, setHeight] = useState(0);
   const isLiked = likedSet.has(w.id);
   const count = likeCounts[w.id] || w.likes;
   const preview = w.comingSoon ? "" : w.body.split("\n\n")[0].slice(0, 130) + "…";
+  const { wpm, isReady } = useReadingSpeed(bodyRef, isExpanded);
+  const [showInsights, setShowInsights] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
+
+  // Share ref with parent for auto-scroll
+  useEffect(() => {
+    if (autoScrollRef && isExpanded) autoScrollRef.current = bodyRef.current;
+    return () => { if (autoScrollRef) autoScrollRef.current = null; };
+  }, [autoScrollRef, isExpanded]);
 
   if (w.comingSoon) {
     return (
@@ -377,7 +387,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
 
   useEffect(() => {
     if (bodyRef.current) setHeight(bodyRef.current.scrollHeight);
-  }, [isExpanded, w]);
+  }, [isExpanded, w, wpm, showInsights]);
 
   return (
     <div style={{ padding: "40px 0", borderBottom: "1px solid var(--border)" }}>
@@ -421,6 +431,8 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
           {w.body.split("\n\n").map((p, i) => (
             <p key={i} style={{ marginBottom: 20 }}>{p}</p>
           ))}
+          <ReadingInsightsNudge wpm={wpm} isReady={isReady} onTellMeMore={() => setShowInsights(true)} />
+          <InsightsPanel wpm={wpm} isOpen={showInsights} onClose={() => setShowInsights(false)} onShare={() => setShowShareCard(true)} />
         </div>
         <div onClick={onToggle} style={{
           marginTop: 16, paddingTop: 16, borderTop: "1px dashed var(--border-light)",
@@ -431,6 +443,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
           collapse
         </div>
       </div>
+      <ShareCardModal wpm={wpm} w={w} isOpen={showShareCard} onClose={() => setShowShareCard(false)} />
 
       {/* Reactions bar */}
       <div style={{
@@ -477,9 +490,19 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
    ARTICLE VIEW — only for deep-links
    ═══════════════════════════════════════════ */
 
-function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenArticle, onBack, copiedId, setCopiedId }) {
+function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenArticle, onBack, copiedId, setCopiedId, autoScrollRef }) {
   const isLiked = likedSet.has(w.id);
   const count = likeCounts[w.id] || w.likes;
+  const contentRef = useRef(null);
+  const { wpm, isReady } = useReadingSpeed(contentRef, true);
+
+  // Share ref with parent for auto-scroll
+  useEffect(() => {
+    if (autoScrollRef) autoScrollRef.current = contentRef.current;
+    return () => { if (autoScrollRef) autoScrollRef.current = null; };
+  }, [autoScrollRef]);
+  const [showInsights, setShowInsights] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
 
   return (
     <div>
@@ -504,11 +527,14 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
         color: "var(--text)", marginBottom: 36, letterSpacing: "-0.01em",
       }}>{w.title}</h1>
 
-      <div style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.9, color: "var(--text-secondary)", fontWeight: 300 }}>
+      <div ref={contentRef} style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.9, color: "var(--text-secondary)", fontWeight: 300 }}>
         {w.body.split("\n\n").map((p, i) => (
           <p key={i} style={{ marginBottom: 22 }}>{p}</p>
         ))}
+        <ReadingInsightsNudge wpm={wpm} isReady={isReady} onTellMeMore={() => setShowInsights(true)} />
+        <InsightsPanel wpm={wpm} isOpen={showInsights} onClose={() => setShowInsights(false)} onShare={() => setShowShareCard(true)} />
       </div>
+      <ShareCardModal wpm={wpm} w={w} isOpen={showShareCard} onClose={() => setShowShareCard(false)} />
 
       {/* Reactions */}
       <div style={{ marginTop: 40, paddingTop: 28, borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 4 }}>
@@ -607,6 +633,7 @@ export default function Blog() {
   const [nameRect, setNameRect] = useState(null);
   const nameRef = useRef(null);
   const trackRef = useRef({ id: null, start: null });
+  const autoScrollContentRef = useRef(null);
 
   useEffect(() => {
     if (nameHov && nameRef.current) {
@@ -717,6 +744,7 @@ export default function Blog() {
 
   return (
     <>
+      <AutoScrollToggle contentRef={autoScrollContentRef} isArticleOpen={!!(expandedId || deepLinkArticle)} />
       <ConstellationOverlay data={constData} visible={nameHov} nameRect={nameRect} />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;1,8..60,300;1,8..60,400&family=IBM+Plex+Mono:wght@300;400&display=swap');
@@ -810,7 +838,8 @@ export default function Blog() {
             <ArticleView w={deepArticle} recommendations={recommendations}
               likeCounts={likeCounts} likedSet={likedSet} onLike={handleLike}
               onOpenArticle={(id) => { setDeepLinkArticle(id); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-              onBack={goHome} copiedId={copiedId} setCopiedId={setCopiedId}/>
+              onBack={goHome} copiedId={copiedId} setCopiedId={setCopiedId}
+              autoScrollRef={autoScrollContentRef}/>
           )}
 
           {/* WRITINGS LIST — expand in place */}
@@ -875,7 +904,8 @@ export default function Blog() {
                       isExpanded={expandedId === w.id}
                       onToggle={() => setExpandedId(expandedId === w.id ? null : w.id)}
                       likeCounts={likeCounts} likedSet={likedSet} onLike={handleLike}
-                      copiedId={copiedId} setCopiedId={setCopiedId}/>
+                      copiedId={copiedId} setCopiedId={setCopiedId}
+                      autoScrollRef={expandedId === w.id ? autoScrollContentRef : null}/>
                   </FadeIn>
                 ))}
               </div>
