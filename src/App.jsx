@@ -1,40 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useReadingSpeed, ReadingInsightsNudge, InsightsPanel, ShareCardModal, AutoScrollToggle } from "./ReadingInsights";
+import { WRITINGS } from "./posts/index.js";
+import { SERIES } from "./posts/series.js";
 
 /* ═══════════════════════════════════════════
    DATA
    ═══════════════════════════════════════════ */
 
-const WRITINGS = [
-  {
-    id: "product-sense-intuition",
-    date: "Apr 2026",
-    title: "Product Sense = Intuition",
-    tag: "product",
-    likes: 0,
-    body: `For years, the phrase "Product Sense" annoyed me. In PM circles, it's revered as this mythical, innate quality. You either possess it or you don't. And it never sat right with me.
-
-Over 2 years at ClearTax, working on GST compliance products, I tried understanding it consciously. And I realised that it is a glorified term for deep intuition. Nothing glamorous. You develop deep intuition by repeated exposure to a particular world until your brain starts predicting how that world behaves.
-
-When I joined Cleartax, my intuition for industry + specific domain was hovering ~30%. GST rules, enterprise tax workflows, how a tax team weighs risk before buying anything. These were completely different contours which I hadn't seen in any of my previous jobs. For 6 months, I didn't deliver any major impact. I didn't pretend to be the archetypal PM who knows what to ship by default and has answers to all the questions. Instead, I became a CSM, a support guy, a sales guy, and an engineer's best friend. I pitched the product and handled objections on the ground. I filed GST returns alongside customers. I sat with engineers solving tickets. And while on this journey, I catalogued the recurring failures and the tiny, quiet victories.
-
-And over time, the map showed up.
-
-When I do the meta synthesis of what actually built my judgment, that traces back to 2 things:
-
-One is environmental depth. How far you dig into the system you're playing in. For me, that meant learning why GST is written the way it is, where the systems break down, and where strategy has to bend to ground reality. That's also where you start seeing users and their behavioural patterns clearly. Not their demographics, but their real anxiety, their switching moment, how a single feature shifts lifetime value or blows up cost.
-
-The other is product craft. The instinct that software is less about building and more about maintaining. The ability to smell complexity before it hits a sprint. Knowing that in enterprise products, a feature isn't done when it ships. A PM who's spent years in fintech won't understand healthcare on day one, but they'll know which structural questions to ask about (dependencies, incentives, where systems fracture under load). Because they've seen enough systems to recognize the shape of the problem. Craft residue is what survives a context switch. The more systems you've lived inside, the more of it you carry.
-
-More situations make your sense stronger. Success shows you what worked. Failure acts as a feedback. I also sped this up by partnering tightly with peers across teams and functions. Observing and participating in my sister teams' decision making process helped me learn without being neck deep in situations.
-
-To be honest, there is no scale to measure it. I make mistakes, my leaders make mistakes even though they have a better sense. So, I take it as a life long art and in the AI world, this will deeply matter. One thing I understand is that intuition cannot be handed out. It is built by getting lost, by talking to the people, by watching where decisions actually land. You don't need a year to "get it". What you need is the right kind of exposure. Deep, ugly, unglamorous exposure with the product and the people who keep it running. Do that long enough, and the mystery will unfold in your own brain.`,
-  },
-];
-
 const PORTFOLIO = [];
 
-const TAGS = ["all", "product"];
+const TAGS = ["all", "product", "essay"];
 const THINKING_ABOUT = [
   "whether compliance can be beautiful",
   "the ethics of automated decisions",
@@ -44,15 +19,16 @@ const THINKING_ABOUT = [
   "edges where data ends and intuition begins",
 ];
 
-// Deterministic seed per post ID — gives a consistent number between 20-50
+// Deterministic seed per post ID — gives a consistent number between 5-10
 function seedLikes(id) {
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
-  return 20 + Math.abs(hash) % 31;
+  return 5 + Math.abs(hash) % 6;
 }
 const ARTICLE_IDX = Object.fromEntries(WRITINGS.map((w, i) => [w.id, i]));
 const TAG_POS = {
   product: { x: 0.50, y: 0.40 },
+  essay: { x: 0.30, y: 0.60 },
 };
 function loadConst() {
   try {
@@ -364,7 +340,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
   const [height, setHeight] = useState(0);
   const isLiked = likedSet.has(w.id);
   const count = likeCounts[w.id] || w.likes;
-  const preview = w.comingSoon ? "" : w.body.split("\n\n")[0].slice(0, 130) + "…";
+  const preview = w.comingSoon ? "" : w.body.split("\n\n")[0].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "$1").slice(0, 130) + "…";
   const { wpm, isReady } = useReadingSpeed(bodyRef, isExpanded);
   const [showInsights, setShowInsights] = useState(false);
   const [showShareCard, setShowShareCard] = useState(false);
@@ -429,7 +405,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
           color: "var(--text-secondary)", fontWeight: 300,
         }}>
           {w.body.split("\n\n").map((p, i) => (
-            <p key={i} style={{ marginBottom: 20 }}>{p}</p>
+            <p key={i} style={{ marginBottom: 20 }}>{renderInlineMarkdown(p)}</p>
           ))}
           <ReadingInsightsNudge wpm={wpm} isReady={isReady} onTellMeMore={() => setShowInsights(true)} />
           <InsightsPanel wpm={wpm} isOpen={showInsights} onClose={() => setShowInsights(false)} onShare={() => setShowShareCard(true)} />
@@ -487,6 +463,138 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
 }
 
 /* ═══════════════════════════════════════════
+   INLINE MARKDOWN RENDERER
+   ═══════════════════════════════════════════ */
+
+function renderInlineMarkdown(text) {
+  // Split text into segments: links, bold, italic, and plain text
+  const parts = [];
+  let remaining = text;
+  let key = 0;
+
+  while (remaining.length > 0) {
+    // Find the earliest match among link, bold, italic
+    let earliest = null;
+    let earliestIdx = remaining.length;
+
+    // Link: [text](url)
+    const linkMatch = remaining.match(/\[([^\]]+)\]\(([^)]+)\)/);
+    if (linkMatch && linkMatch.index < earliestIdx) {
+      earliest = { type: "link", match: linkMatch };
+      earliestIdx = linkMatch.index;
+    }
+
+    // Bold: **text**
+    const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
+    if (boldMatch && boldMatch.index < earliestIdx) {
+      earliest = { type: "bold", match: boldMatch };
+      earliestIdx = boldMatch.index;
+    }
+
+    // Italic: *text* (but not inside bold)
+    const italicMatch = remaining.match(/(?<!\*)\*([^*]+)\*(?!\*)/);
+    if (italicMatch && italicMatch.index < earliestIdx) {
+      earliest = { type: "italic", match: italicMatch };
+      earliestIdx = italicMatch.index;
+    }
+
+    if (!earliest) {
+      parts.push(remaining);
+      break;
+    }
+
+    // Push text before the match
+    if (earliestIdx > 0) {
+      parts.push(remaining.slice(0, earliestIdx));
+    }
+
+    const m = earliest.match;
+    if (earliest.type === "link") {
+      parts.push(<a key={key++} href={m[2]} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", textDecoration: "underline", textUnderlineOffset: 3 }}>{m[1]}</a>);
+    } else if (earliest.type === "bold") {
+      parts.push(<strong key={key++} style={{ fontWeight: 500 }}>{m[1]}</strong>);
+    } else if (earliest.type === "italic") {
+      parts.push(<em key={key++}>{m[1]}</em>);
+    }
+
+    remaining = remaining.slice(earliestIdx + m[0].length);
+  }
+
+  return parts;
+}
+
+/* ═══════════════════════════════════════════
+   SERIES NAVIGATION
+   ═══════════════════════════════════════════ */
+
+function SeriesNav({ w, position, onOpenArticle }) {
+  if (!w.series) return null;
+
+  const seriesData = SERIES[w.series.name];
+  if (!seriesData) return null;
+
+  const { parts } = seriesData;
+  const currentIdx = parts.findIndex(p => p.id === w.id);
+  if (currentIdx === -1) return null;
+
+  const prev = currentIdx > 0 ? parts[currentIdx - 1] : null;
+  const next = currentIdx < parts.length - 1 ? parts[currentIdx + 1] : null;
+  const first = parts[0];
+  const isFirst = currentIdx === 0;
+
+  const linkStyle = {
+    color: "var(--accent)", cursor: "pointer", transition: "opacity 0.3s",
+    textDecoration: "none", fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.02em",
+  };
+
+  const labelStyle = {
+    fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-tertiary)",
+    letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4,
+  };
+
+  const titleStyle = {
+    fontFamily: "var(--serif)", fontSize: 16, color: "var(--accent)", fontWeight: 400,
+  };
+
+  if (position === "top") {
+    return (
+      <div style={{ marginBottom: 32, paddingBottom: 24, borderBottom: "1px dashed var(--border-light)" }}>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-tertiary)", letterSpacing: "0.04em", marginBottom: 12 }}>
+          Part {w.series.part} of {w.series.totalParts}
+        </div>
+        <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+          {!isFirst && (
+            <span onClick={() => onOpenArticle(first.id)} style={linkStyle}>
+              Beginning
+            </span>
+          )}
+          {prev && (
+            <span onClick={() => onOpenArticle(prev.id)} style={linkStyle}>
+              Previous: {prev.shortTitle}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (position === "bottom" && next) {
+    return (
+      <div style={{ marginTop: 48, padding: "28px 0", borderTop: "1px solid var(--border)" }}>
+        <div style={labelStyle}>Next part</div>
+        <div onClick={() => onOpenArticle(next.id)} style={{ cursor: "pointer", marginTop: 6 }}>
+          <span style={titleStyle}>
+            {next.shortTitle} &rarr;
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+/* ═══════════════════════════════════════════
    ARTICLE VIEW — only for deep-links
    ═══════════════════════════════════════════ */
 
@@ -527,9 +635,11 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
         color: "var(--text)", marginBottom: 36, letterSpacing: "-0.01em",
       }}>{w.title}</h1>
 
+      <SeriesNav w={w} position="top" onOpenArticle={onOpenArticle} />
+
       <div ref={contentRef} style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.9, color: "var(--text-secondary)", fontWeight: 300 }}>
         {w.body.split("\n\n").map((p, i) => (
-          <p key={i} style={{ marginBottom: 22 }}>{p}</p>
+          <p key={i} style={{ marginBottom: 22 }}>{renderInlineMarkdown(p)}</p>
         ))}
         <ReadingInsightsNudge wpm={wpm} isReady={isReady} onTellMeMore={() => setShowInsights(true)} />
         <InsightsPanel wpm={wpm} isOpen={showInsights} onClose={() => setShowInsights(false)} onShare={() => setShowShareCard(true)} />
@@ -557,6 +667,8 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
           {copiedId === w.id && <span style={{ fontFamily: "var(--mono)", fontSize: 10 }}>copied</span>}
         </button>
       </div>
+
+      <SeriesNav w={w} position="bottom" onOpenArticle={onOpenArticle} />
 
       {/* Recommendations */}
       {recommendations.length > 0 && (
@@ -738,7 +850,11 @@ export default function Blog() {
   });
 
   const deepArticle = deepLinkArticle ? WRITINGS.find(w => w.id === deepLinkArticle) : null;
-  const recommendations = deepArticle ? WRITINGS.filter(w => w.id !== deepArticle.id).slice(0, 3) : [];
+  const recommendations = deepArticle ? WRITINGS.filter(w => {
+    if (w.id === deepArticle.id) return false;
+    if (deepArticle.series && w.series && w.series.name === deepArticle.series.name) return false;
+    return true;
+  }).slice(0, 3) : [];
 
   const goHome = () => { setPage("writings"); setDeepLinkArticle(null); };
 
@@ -750,10 +866,10 @@ export default function Blog() {
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;1,8..60,300;1,8..60,400&family=IBM+Plex+Mono:wght@300;400&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-          --bg: #F4F5F0; --bg-card: #EAECE5; --text: #1B2021;
-          --text-secondary: #4A5043; --text-tertiary: #8A8E82;
+          --bg: #FAFAF8; --bg-card: #F2F2EE; --text: #1B2021;
+          --text-secondary: #2C3027; --text-tertiary: #7A7E72;
           --accent: #3D6B5E; --tag-bg: rgba(61,107,94,0.09);
-          --border: #D4D6CE; --border-light: #E2E3DC; --search-bg: #EAEBE5;
+          --border: #DDDDD8; --border-light: #EAEAE5; --search-bg: #F0F0EC;
           --serif: 'Cormorant Garamond', Georgia, serif;
           --body: 'Source Serif 4', Georgia, serif;
           --mono: 'IBM Plex Mono', monospace;
