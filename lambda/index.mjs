@@ -7,7 +7,7 @@ const TABLE = "blog-likes";
 function seedLikes(id) {
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
-  return 20 + Math.abs(hash) % 31;
+  return 5 + Math.abs(hash) % 6;
 }
 
 const headers = {
