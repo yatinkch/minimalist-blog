@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useReadingSpeed, ReadingInsightsNudge, InsightsPanel, ShareCardModal, AutoScrollToggle } from "./ReadingInsights";
+import { AutoScrollToggle } from "./ReadingInsights";
 import { WRITINGS } from "./posts/index.js";
 import { SERIES } from "./posts/series.js";
 
@@ -341,9 +341,6 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
   const isLiked = likedSet.has(w.id);
   const count = likeCounts[w.id] || w.likes;
   const preview = w.comingSoon ? "" : w.body.split("\n\n")[0].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "$1").slice(0, 130) + "…";
-  const { wpm, isReady } = useReadingSpeed(bodyRef, isExpanded);
-  const [showInsights, setShowInsights] = useState(false);
-  const [showShareCard, setShowShareCard] = useState(false);
 
   // Share ref with parent for auto-scroll
   useEffect(() => {
@@ -363,7 +360,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
 
   useEffect(() => {
     if (bodyRef.current) setHeight(bodyRef.current.scrollHeight);
-  }, [isExpanded, w, wpm, showInsights]);
+  }, [isExpanded, w]);
 
   return (
     <div style={{ padding: "40px 0", borderBottom: "1px solid var(--border)" }}>
@@ -407,8 +404,6 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
           {w.body.split("\n\n").map((p, i) => (
             <p key={i} style={{ marginBottom: 20 }}>{renderInlineMarkdown(p)}</p>
           ))}
-          <ReadingInsightsNudge wpm={wpm} isReady={isReady} onTellMeMore={() => setShowInsights(true)} />
-          <InsightsPanel wpm={wpm} isOpen={showInsights} onClose={() => setShowInsights(false)} onShare={() => setShowShareCard(true)} />
         </div>
         <div onClick={onToggle} style={{
           marginTop: 16, paddingTop: 16, borderTop: "1px dashed var(--border-light)",
@@ -419,7 +414,6 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
           collapse
         </div>
       </div>
-      <ShareCardModal wpm={wpm} w={w} isOpen={showShareCard} onClose={() => setShowShareCard(false)} />
 
       {/* Reactions bar */}
       <div style={{
@@ -579,6 +573,8 @@ function SeriesNav({ w, position, onOpenArticle }) {
   }
 
   if (position === "bottom" && next) {
+    const nextPost = WRITINGS.find(p => p.id === next.id);
+    const nextPreview = nextPost ? nextPost.body.split("\n\n")[0].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "$1").slice(0, 180) + "…" : "";
     return (
       <div style={{ marginTop: 48, padding: "28px 0", borderTop: "1px solid var(--border)" }}>
         <div style={labelStyle}>Next part</div>
@@ -586,6 +582,11 @@ function SeriesNav({ w, position, onOpenArticle }) {
           <span style={titleStyle}>
             {next.shortTitle} &rarr;
           </span>
+          {nextPreview && (
+            <p style={{ fontFamily: "var(--body)", fontSize: 14.5, lineHeight: 1.7, color: "var(--text-tertiary)", fontWeight: 300, fontStyle: "italic", marginTop: 10 }}>
+              {nextPreview}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -602,15 +603,12 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
   const isLiked = likedSet.has(w.id);
   const count = likeCounts[w.id] || w.likes;
   const contentRef = useRef(null);
-  const { wpm, isReady } = useReadingSpeed(contentRef, true);
 
   // Share ref with parent for auto-scroll
   useEffect(() => {
     if (autoScrollRef) autoScrollRef.current = contentRef.current;
     return () => { if (autoScrollRef) autoScrollRef.current = null; };
   }, [autoScrollRef]);
-  const [showInsights, setShowInsights] = useState(false);
-  const [showShareCard, setShowShareCard] = useState(false);
 
   return (
     <div>
@@ -641,10 +639,8 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
         {w.body.split("\n\n").map((p, i) => (
           <p key={i} style={{ marginBottom: 22 }}>{renderInlineMarkdown(p)}</p>
         ))}
-        <ReadingInsightsNudge wpm={wpm} isReady={isReady} onTellMeMore={() => setShowInsights(true)} />
-        <InsightsPanel wpm={wpm} isOpen={showInsights} onClose={() => setShowInsights(false)} onShare={() => setShowShareCard(true)} />
+        <SeriesNav w={w} position="bottom" onOpenArticle={onOpenArticle} />
       </div>
-      <ShareCardModal wpm={wpm} w={w} isOpen={showShareCard} onClose={() => setShowShareCard(false)} />
 
       {/* Reactions */}
       <div style={{ marginTop: 40, paddingTop: 28, borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 4 }}>
@@ -667,8 +663,6 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
           {copiedId === w.id && <span style={{ fontFamily: "var(--mono)", fontSize: 10 }}>copied</span>}
         </button>
       </div>
-
-      <SeriesNav w={w} position="bottom" onOpenArticle={onOpenArticle} />
 
       {/* Recommendations */}
       {recommendations.length > 0 && (
