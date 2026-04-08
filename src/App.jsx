@@ -635,7 +635,7 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
 
       <SeriesNav w={w} position="top" onOpenArticle={onOpenArticle} />
 
-      <div ref={contentRef} style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.9, color: "var(--text-secondary)", fontWeight: 300 }}>
+      <div ref={contentRef} className="article-body" style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.9, color: "var(--text-secondary)", fontWeight: 300 }}>
         {w.body.split("\n\n").map((p, i) => (
           <p key={i} style={{ marginBottom: 22 }}>{renderInlineMarkdown(p)}</p>
         ))}
@@ -860,7 +860,7 @@ export default function Blog() {
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;1,8..60,300;1,8..60,400&family=IBM+Plex+Mono:wght@300;400&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-          --bg: #FAFAF8; --bg-card: #F2F2EE; --text: #1B2021;
+          --bg: #FDFDFB; --bg-card: #F5F5F2; --text: #1B2021;
           --text-secondary: #2C3027; --text-tertiary: #7A7E72;
           --accent: #3D6B5E; --tag-bg: rgba(61,107,94,0.09);
           --border: #DDDDD8; --border-light: #EAEAE5; --search-bg: #F0F0EC;
@@ -892,8 +892,12 @@ export default function Blog() {
           100% { opacity: 0; transform: rotate(var(--r, 0deg)) translateY(-18px) scale(0); }
         }
         @media (max-width: 600px) {
-          .outer { padding: 40px 20px !important; }
-          .hero { font-size: 32px !important; }
+          .outer { padding: 40px 18px !important; }
+          .hero { font-size: 28px !important; }
+          h1 { font-size: 26px !important; line-height: 1.3 !important; margin-bottom: 24px !important; }
+          .writing-title { font-size: 20px !important; }
+          .article-body { font-size: 15.5px !important; line-height: 1.8 !important; }
+          .article-body p { margin-bottom: 18px !important; }
         }
       `}</style>
 
