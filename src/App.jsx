@@ -611,6 +611,7 @@ function SeriesNav({ w, position, onOpenArticle }) {
    ═══════════════════════════════════════════ */
 
 function SubscribeForm() {
+  const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState(null); // null | "loading" | "success" | "error"
   const [focused, setFocused] = useState(false);
@@ -632,20 +633,32 @@ function SubscribeForm() {
 
   if (status === "success") {
     return (
-      <div style={{ marginTop: 64, padding: "40px 32px", background: "var(--bg-card)", borderRadius: 10, border: "1px solid var(--border-light)", textAlign: "center" }}>
-        <p style={{ fontFamily: "var(--serif)", fontSize: 20, fontStyle: "italic", color: "var(--text)", fontWeight: 400 }}>
+      <div style={{ marginTop: 48, textAlign: "center" }}>
+        <p style={{ fontFamily: "var(--serif)", fontSize: 18, fontStyle: "italic", color: "var(--accent)", fontWeight: 400 }}>
           You're in. Thank you.
         </p>
       </div>
     );
   }
 
-  return (
-    <div style={{ marginTop: 64, padding: "40px 32px", background: "var(--bg-card)", borderRadius: 10, border: "1px solid var(--border-light)", textAlign: "center" }}>
-      <div style={{ fontFamily: "var(--serif)", fontSize: 22, fontWeight: 400, color: "var(--text)", marginBottom: 8 }}>
-        Stay in the margins
+  if (!open) {
+    return (
+      <div style={{ marginTop: 48, textAlign: "center" }}>
+        <button onClick={() => setOpen(true)} className="react-btn" style={{
+          fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.04em",
+          color: "var(--accent)", padding: "10px 28px",
+          border: "1px solid var(--border-light)", borderRadius: 100,
+          background: "transparent", cursor: "pointer", transition: "all 0.3s",
+        }}>
+          stay in the margins
+        </button>
       </div>
-      <p style={{ fontFamily: "var(--body)", fontSize: 14, color: "var(--text-tertiary)", fontWeight: 300, marginBottom: 24 }}>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 48, padding: "32px 28px", background: "var(--bg-card)", borderRadius: 10, border: "1px solid var(--border-light)", textAlign: "center" }}>
+      <p style={{ fontFamily: "var(--body)", fontSize: 14, color: "var(--text-tertiary)", fontWeight: 300, marginBottom: 20 }}>
         Occasional emails when something new goes up. Nothing more.
       </p>
       <form onSubmit={handleSubmit} style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
@@ -656,6 +669,7 @@ function SubscribeForm() {
           onChange={e => setEmail(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
+          autoFocus
           style={{
             padding: "12px 16px", fontFamily: "var(--body)", fontSize: 14.5, fontWeight: 300,
             background: "var(--search-bg)", border: `1px solid ${focused ? "var(--accent)" : "var(--border-light)"}`,
@@ -727,6 +741,7 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
           <p key={i} style={{ marginBottom: 22 }}>{renderInlineMarkdown(p)}</p>
         ))}
         <SeriesNav w={w} position="bottom" onOpenArticle={onOpenArticle} />
+        <SubscribeForm />
       </div>
 
       {/* Reactions */}
@@ -769,7 +784,6 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
         </div>
       )}
 
-      <SubscribeForm />
     </div>
   );
 }
