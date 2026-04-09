@@ -405,7 +405,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
 
       {/* Expanded body */}
       <div style={{
-        maxHeight: isExpanded ? height + 80 : 0, opacity: isExpanded ? 1 : 0,
+        maxHeight: isExpanded ? height + 250 : 0, opacity: isExpanded ? 1 : 0,
         overflow: "hidden", transition: "max-height 0.6s ease, opacity 0.5s ease",
       }}>
         <div ref={bodyRef} style={{
@@ -415,6 +415,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
           {w.body.split("\n\n").map((p, i) => (
             <p key={i} style={{ marginBottom: 20 }}>{renderInlineMarkdown(p)}</p>
           ))}
+          {isExpanded && <SubscribeForm />}
         </div>
         <div onClick={onToggle} style={{
           marginTop: 16, paddingTop: 16, borderTop: "1px dashed var(--border-light)",
@@ -1141,9 +1142,6 @@ export default function Blog() {
                       autoScrollRef={expandedId === w.id ? autoScrollContentRef : null}/>
                   </FadeIn>
                 ))}
-                <FadeIn delay={700}>
-                  <SubscribeForm />
-                </FadeIn>
               </div>
             </>
           )}
