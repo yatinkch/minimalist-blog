@@ -650,7 +650,7 @@ function SubscribeForm() {
           border: "1px solid var(--border-light)", borderRadius: 100,
           background: "transparent", cursor: "pointer", transition: "all 0.3s",
         }}>
-          stay in the margins
+          subscribe
         </button>
       </div>
     );
