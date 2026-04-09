@@ -3,6 +3,17 @@ import { AutoScrollToggle } from "./ReadingInsights";
 import { WRITINGS } from "./posts/index.js";
 import { SERIES } from "./posts/series.js";
 
+const API = "https://2ioqhsfec7.execute-api.us-east-1.amazonaws.com";
+
+function sendAnalytics(page, eventType, timeSpentSecs = 0) {
+  const body = JSON.stringify({ page, eventType, timeSpentSecs, referrer: document.referrer || "" });
+  if (eventType === "leave" && navigator.sendBeacon) {
+    navigator.sendBeacon(`${API}/analytics`, new Blob([body], { type: "application/json" }));
+  } else {
+    fetch(`${API}/analytics`, { method: "POST", headers: { "Content-Type": "application/json" }, body }).catch(() => {});
+  }
+}
+
 /* ═══════════════════════════════════════════
    DATA
    ═══════════════════════════════════════════ */
@@ -596,6 +607,82 @@ function SeriesNav({ w, position, onOpenArticle }) {
 }
 
 /* ═══════════════════════════════════════════
+   SUBSCRIBE FORM
+   ═══════════════════════════════════════════ */
+
+function SubscribeForm() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState(null); // null | "loading" | "success" | "error"
+  const [focused, setFocused] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return;
+    setStatus("loading");
+    fetch(`${API}/subscribe`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: trimmed }),
+    })
+      .then(r => r.json())
+      .then(() => setStatus("success"))
+      .catch(() => setStatus("error"));
+  };
+
+  if (status === "success") {
+    return (
+      <div style={{ marginTop: 64, padding: "40px 32px", background: "var(--bg-card)", borderRadius: 10, border: "1px solid var(--border-light)", textAlign: "center" }}>
+        <p style={{ fontFamily: "var(--serif)", fontSize: 20, fontStyle: "italic", color: "var(--text)", fontWeight: 400 }}>
+          You're in. Thank you.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 64, padding: "40px 32px", background: "var(--bg-card)", borderRadius: 10, border: "1px solid var(--border-light)", textAlign: "center" }}>
+      <div style={{ fontFamily: "var(--serif)", fontSize: 22, fontWeight: 400, color: "var(--text)", marginBottom: 8 }}>
+        Stay in the margins
+      </div>
+      <p style={{ fontFamily: "var(--body)", fontSize: 14, color: "var(--text-tertiary)", fontWeight: 300, marginBottom: 24 }}>
+        Occasional emails when something new goes up. Nothing more.
+      </p>
+      <form onSubmit={handleSubmit} style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+        <input
+          type="email"
+          placeholder="your@email.com"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          style={{
+            padding: "12px 16px", fontFamily: "var(--body)", fontSize: 14.5, fontWeight: 300,
+            background: "var(--search-bg)", border: `1px solid ${focused ? "var(--accent)" : "var(--border-light)"}`,
+            borderRadius: 8, outline: "none", width: 240, transition: "border-color 0.3s",
+            color: "var(--text)",
+          }}
+        />
+        <button type="submit" disabled={status === "loading"} style={{
+          fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.04em",
+          color: "var(--accent)", padding: "10px 24px",
+          border: "1px solid var(--accent)", borderRadius: 100,
+          background: "transparent", cursor: "pointer", transition: "all 0.3s",
+          opacity: status === "loading" ? 0.5 : 1,
+        }}>
+          {status === "loading" ? "..." : "subscribe"}
+        </button>
+      </form>
+      {status === "error" && (
+        <p style={{ fontFamily: "var(--mono)", fontSize: 11, color: "#D94F4F", marginTop: 12 }}>
+          Something went wrong. Try again?
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
    ARTICLE VIEW — only for deep-links
    ═══════════════════════════════════════════ */
 
@@ -681,6 +768,8 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
           ))}
         </div>
       )}
+
+      <SubscribeForm />
     </div>
   );
 }
@@ -753,6 +842,7 @@ export default function Blog() {
     if (prev.id && prev.id !== activeId && prev.start) {
       const secs = Math.round((Date.now() - prev.start) / 1000);
       if (secs >= 3) {
+        sendAnalytics(prev.id, "leave", secs);
         const idx = ARTICLE_IDX[prev.id];
         if (idx !== undefined) {
           setConstData(d => {
@@ -764,6 +854,7 @@ export default function Blog() {
         }
       }
     }
+    if (activeId) sendAnalytics(activeId, "pageview");
     trackRef.current = { id: activeId || null, start: activeId ? Date.now() : null };
   }, [activeId]);
 
@@ -773,6 +864,7 @@ export default function Blog() {
       if (!id || !start) return;
       const secs = Math.round((Date.now() - start) / 1000);
       if (secs < 3) return;
+      sendAnalytics(id, "leave", secs);
       const idx = ARTICLE_IDX[id];
       if (idx === undefined) return;
       const d = loadConst();
@@ -782,6 +874,19 @@ export default function Blog() {
     window.addEventListener("beforeunload", flush);
     return () => window.removeEventListener("beforeunload", flush);
   }, []);
+
+  // Heartbeat: send analytics every 30s while reading
+  useEffect(() => {
+    if (!activeId) return;
+    const interval = setInterval(() => {
+      const { start } = trackRef.current;
+      if (start) sendAnalytics(activeId, "heartbeat", Math.round((Date.now() - start) / 1000));
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [activeId]);
+
+  // Home pageview on mount
+  useEffect(() => { sendAnalytics("home", "pageview"); }, []);
 
   useEffect(() => {
     const init = {};
@@ -794,7 +899,7 @@ export default function Blog() {
     setLikeCounts(init);
     // Fetch global like counts from API (init seeds new posts)
     const ids = WRITINGS.map(w => w.id).join(",");
-    fetch(`https://2ioqhsfec7.execute-api.us-east-1.amazonaws.com/likes?init=${ids}`)
+    fetch(`${API}/likes?init=${ids}`)
       .then(r => r.json())
       .then(counts => {
         setLikeCounts(lc => {
@@ -825,7 +930,7 @@ export default function Blog() {
       // Persist liked state locally
       try { localStorage.setItem("likedSet", JSON.stringify([...next])); } catch {}
       // Sync with API
-      fetch(`https://2ioqhsfec7.execute-api.us-east-1.amazonaws.com/likes/${encodeURIComponent(id)}`, {
+      fetch(`${API}/likes/${encodeURIComponent(id)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(wasLiked ? { action: "unlike" } : {}),
@@ -1022,6 +1127,9 @@ export default function Blog() {
                       autoScrollRef={expandedId === w.id ? autoScrollContentRef : null}/>
                   </FadeIn>
                 ))}
+                <FadeIn delay={700}>
+                  <SubscribeForm />
+                </FadeIn>
               </div>
             </>
           )}

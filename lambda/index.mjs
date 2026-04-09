@@ -1,7 +1,10 @@
-import { DynamoDBClient, GetItemCommand, UpdateItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, GetItemCommand, UpdateItemCommand, ScanCommand, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { createHash } from "crypto";
 
 const db = new DynamoDBClient({ region: "us-east-1" });
 const TABLE = "blog-likes";
+const SUBSCRIBERS_TABLE = "blog-subscribers";
+const ANALYTICS_TABLE = "blog-analytics";
 
 // Deterministic seed — same logic as frontend
 function seedLikes(id) {
@@ -90,6 +93,62 @@ export const handler = async (event) => {
 
     const newCount = Number(result.Attributes.likeCount.N);
     return { statusCode: 200, headers, body: JSON.stringify({ postId, likeCount: Math.max(0, newCount) }) };
+  }
+
+  // POST /subscribe — save email to subscribers table
+  if (method === "POST" && path === "/subscribe") {
+    try {
+      const { email } = JSON.parse(event.body || "{}");
+      const trimmed = (email || "").trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid email" }) };
+      }
+      await db.send(new PutItemCommand({
+        TableName: SUBSCRIBERS_TABLE,
+        Item: {
+          email: { S: trimmed },
+          subscribedAt: { S: new Date().toISOString() },
+        },
+      }));
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    } catch (err) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: "Failed to subscribe" }) };
+    }
+  }
+
+  // POST /analytics — record analytics event
+  if (method === "POST" && path === "/analytics") {
+    try {
+      const { page, eventType, timeSpentSecs, referrer } = JSON.parse(event.body || "{}");
+      if (!page || !eventType) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing page or eventType" }) };
+      }
+
+      // Extract and hash IP
+      const sourceIp = event.requestContext?.http?.sourceIp || event.requestContext?.identity?.sourceIp || "unknown";
+      const ipHash = createHash("sha256").update(sourceIp).digest("hex").slice(0, 16);
+
+      // Random suffix to prevent sort key collisions
+      const rand = Math.random().toString(36).slice(2, 6);
+      const timestamp = new Date().toISOString();
+
+      await db.send(new PutItemCommand({
+        TableName: ANALYTICS_TABLE,
+        Item: {
+          pk: { S: `PAGE#${page}` },
+          sk: { S: `EVENT#${timestamp}#${rand}` },
+          eventType: { S: eventType },
+          ipHash: { S: ipHash },
+          timestamp: { S: timestamp },
+          timeSpentSecs: { N: String(timeSpentSecs || 0) },
+          userAgent: { S: (event.headers?.["user-agent"] || event.headers?.["User-Agent"] || "unknown") },
+          referrer: { S: referrer || "" },
+        },
+      }));
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    } catch (err) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: "Failed to record event" }) };
+    }
   }
 
   return { statusCode: 404, headers, body: JSON.stringify({ error: "Not found" }) };
