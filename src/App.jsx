@@ -578,13 +578,6 @@ function SeriesNav({ w, position, onOpenArticle }) {
               Previous: {prev.shortTitle}
             </span>
           )}
-          <span onClick={() => {
-            const btn = document.querySelector('[data-subscribe] button');
-            if (btn) { btn.click(); btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-            else { const el = document.querySelector('[data-subscribe]'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-          }} style={linkStyle}>
-            Subscribe
-          </span>
         </div>
       </div>
     );
