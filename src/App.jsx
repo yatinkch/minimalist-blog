@@ -567,7 +567,7 @@ function SeriesNav({ w, position, onOpenArticle }) {
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-tertiary)", letterSpacing: "0.04em", marginBottom: 12 }}>
           Part {w.series.part} of {w.series.totalParts}
         </div>
-        <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "center" }}>
           {!isFirst && (
             <span onClick={() => onOpenArticle(first.id)} style={linkStyle}>
               Beginning
@@ -578,6 +578,13 @@ function SeriesNav({ w, position, onOpenArticle }) {
               Previous: {prev.shortTitle}
             </span>
           )}
+          <span onClick={() => {
+            const btn = document.querySelector('[data-subscribe] button');
+            if (btn) { btn.click(); btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            else { const el = document.querySelector('[data-subscribe]'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+          }} style={linkStyle}>
+            Subscribe
+          </span>
         </div>
       </div>
     );
@@ -643,7 +650,7 @@ function SubscribeForm() {
 
   if (!open) {
     return (
-      <div style={{ marginTop: 48, textAlign: "center" }}>
+      <div data-subscribe style={{ marginTop: 48, textAlign: "center" }}>
         <button onClick={() => setOpen(true)} className="react-btn" style={{
           fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.04em",
           color: "var(--accent)", padding: "10px 28px",
