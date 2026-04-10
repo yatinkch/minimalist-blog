@@ -328,11 +328,11 @@ function AnimatedHeart({ isLiked, size = 16 }) {
    ═══════════════════════════════════════════ */
 
 function shareOnTwitter(w) {
-  const text = `"${w.title}" — a quiet observation worth reading.\n\n${w.body.split("\n\n")[0].slice(0, 200)}...`;
+  const text = `"${w.title}" — a quiet observation worth reading.\n\n${w.body.split("\n\n").filter(p => !p.match(/^!\[.*\]\(.*\)$/))[0].slice(0, 200)}...`;
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(`https://yatinkch.com/#${w.id}`)}`, "_blank");
 }
 function shareOnLinkedIn(w) {
-  const snippet = w.body.split("\n\n")[0].slice(0, 200);
+  const snippet = w.body.split("\n\n").filter(p => !p.match(/^!\[.*\]\(.*\)$/))[0].slice(0, 200);
   const text = `"${w.title}"\n\n${snippet}...\n\nRead more:`;
   window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text + " https://yatinkch.com/#" + w.id)}`, "_blank");
 }
@@ -351,7 +351,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
   const [height, setHeight] = useState(0);
   const isLiked = likedSet.has(w.id);
   const count = likeCounts[w.id] || w.likes;
-  const preview = w.comingSoon ? "" : w.body.split("\n\n")[0].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "$1").slice(0, 130) + "…";
+  const preview = w.comingSoon ? "" : w.body.split("\n\n").filter(p => !p.match(/^!\[.*\]\(.*\)$/))[0].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "$1").slice(0, 130) + "…";
 
   // Share ref with parent for auto-scroll
   useEffect(() => {
@@ -412,9 +412,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
           fontFamily: "var(--body)", fontSize: 16.5, lineHeight: 1.85,
           color: "var(--text-secondary)", fontWeight: 300,
         }}>
-          {w.body.split("\n\n").map((p, i) => (
-            <p key={i} style={{ marginBottom: 20 }}>{renderInlineMarkdown(p)}</p>
-          ))}
+          {w.body.split("\n\n").map((p, i) => renderBodyBlock(p, i))}
           {isExpanded && <SubscribeForm />}
         </div>
         <div onClick={onToggle} style={{
@@ -529,6 +527,24 @@ function renderInlineMarkdown(text) {
   return parts;
 }
 
+function renderBodyBlock(text, i) {
+  const imgMatch = text.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+  if (imgMatch) {
+    const [, caption, url] = imgMatch;
+    return (
+      <figure key={i} style={{ margin: "32px 0", textAlign: "center" }}>
+        <img src={url} alt={caption} style={{ maxWidth: "100%", borderRadius: 6, border: "1px solid var(--border-light)" }} />
+        {caption && (
+          <figcaption style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-tertiary)", marginTop: 10, textAlign: "center", lineHeight: 1.5 }}>
+            {caption}
+          </figcaption>
+        )}
+      </figure>
+    );
+  }
+  return <p key={i} style={{ marginBottom: 22 }}>{renderInlineMarkdown(text)}</p>;
+}
+
 /* ═══════════════════════════════════════════
    SERIES NAVIGATION
    ═══════════════════════════════════════════ */
@@ -586,7 +602,7 @@ function SeriesNav({ w, position, onOpenArticle }) {
 
   if (position === "bottom" && next) {
     const nextPost = WRITINGS.find(p => p.id === next.id);
-    const nextPreview = nextPost ? nextPost.body.split("\n\n")[0].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "$1").slice(0, 180) + "…" : "";
+    const nextPreview = nextPost ? nextPost.body.split("\n\n").filter(p => !p.match(/^!\[.*\]\(.*\)$/))[0].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "$1").slice(0, 180) + "…" : "";
     return (
       <div style={{ marginTop: 48, padding: "28px 0", borderTop: "1px solid var(--border)" }}>
         <div style={labelStyle}>Next part</div>
@@ -738,9 +754,7 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
       <SeriesNav w={w} position="top" onOpenArticle={onOpenArticle} />
 
       <div ref={contentRef} className="article-body" style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.9, color: "var(--text-secondary)", fontWeight: 300 }}>
-        {w.body.split("\n\n").map((p, i) => (
-          <p key={i} style={{ marginBottom: 22 }}>{renderInlineMarkdown(p)}</p>
-        ))}
+        {w.body.split("\n\n").map((p, i) => renderBodyBlock(p, i))}
         <SeriesNav w={w} position="bottom" onOpenArticle={onOpenArticle} />
         <SubscribeForm />
       </div>
