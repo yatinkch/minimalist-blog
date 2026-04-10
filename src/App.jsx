@@ -362,7 +362,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
   if (w.comingSoon) {
     return (
       <div style={{ padding: "40px 0", borderBottom: "1px solid var(--border)" }}>
-        <p style={{ fontFamily: "var(--body)", fontSize: 16, fontStyle: "italic", color: "var(--text-tertiary)", fontWeight: 300 }}>
+        <p style={{ fontFamily: "var(--body)", fontSize: 16, fontStyle: "italic", color: "var(--text-tertiary)", fontWeight: 400 }}>
           Coming soon...
         </p>
       </div>
@@ -398,7 +398,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
       {!isExpanded && (
         <p onClick={onToggle} style={{
           fontFamily: "var(--body)", fontSize: 15, lineHeight: 1.7,
-          color: "var(--text-tertiary)", fontStyle: "italic", fontWeight: 300,
+          color: "var(--text-tertiary)", fontStyle: "italic", fontWeight: 400,
           marginBottom: 18, cursor: "pointer",
         }}>{preview}</p>
       )}
@@ -410,7 +410,7 @@ function WritingCard({ w, isExpanded, onToggle, likeCounts, likedSet, onLike, co
       }}>
         <div ref={bodyRef} style={{
           fontFamily: "var(--body)", fontSize: 16.5, lineHeight: 1.85,
-          color: "var(--text-secondary)", fontWeight: 300,
+          color: "var(--text-secondary)", fontWeight: 400,
         }}>
           {w.body.split("\n\n").map((p, i) => renderBodyBlock(p, i))}
           {isExpanded && <SubscribeForm />}
@@ -611,7 +611,7 @@ function SeriesNav({ w, position, onOpenArticle }) {
             {next.shortTitle} &rarr;
           </span>
           {nextPreview && (
-            <p style={{ fontFamily: "var(--body)", fontSize: 14.5, lineHeight: 1.7, color: "var(--text-tertiary)", fontWeight: 300, fontStyle: "italic", marginTop: 10 }}>
+            <p style={{ fontFamily: "var(--body)", fontSize: 14.5, lineHeight: 1.7, color: "var(--text-tertiary)", fontWeight: 400, fontStyle: "italic", marginTop: 10 }}>
               {nextPreview}
             </p>
           )}
@@ -675,7 +675,7 @@ function SubscribeForm() {
 
   return (
     <div style={{ marginTop: 48, padding: "32px 28px", background: "var(--bg-card)", borderRadius: 10, border: "1px solid var(--border-light)", textAlign: "center" }}>
-      <p style={{ fontFamily: "var(--body)", fontSize: 14, color: "var(--text-tertiary)", fontWeight: 300, marginBottom: 20 }}>
+      <p style={{ fontFamily: "var(--body)", fontSize: 14, color: "var(--text-tertiary)", fontWeight: 400, marginBottom: 20 }}>
         Occasional emails when something new goes up. Nothing more.
       </p>
       <form onSubmit={handleSubmit} style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
@@ -753,7 +753,7 @@ function ArticleView({ w, recommendations, likeCounts, likedSet, onLike, onOpenA
 
       <SeriesNav w={w} position="top" onOpenArticle={onOpenArticle} />
 
-      <div ref={contentRef} className="article-body" style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.9, color: "var(--text-secondary)", fontWeight: 300 }}>
+      <div ref={contentRef} className="article-body" style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.9, color: "var(--text-secondary)", fontWeight: 400 }}>
         {w.body.split("\n\n").map((p, i) => renderBodyBlock(p, i))}
         <SeriesNav w={w} position="bottom" onOpenArticle={onOpenArticle} />
         <SubscribeForm />
@@ -817,7 +817,7 @@ function PortfolioPage() {
         </h1>
       </FadeIn>
       <FadeIn delay={150}>
-        <p style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300, maxWidth: 540, marginBottom: 56, fontStyle: "italic" }}>
+        <p style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 400, maxWidth: 540, marginBottom: 56, fontStyle: "italic" }}>
           Coming soon...
         </p>
       </FadeIn>
@@ -825,7 +825,7 @@ function PortfolioPage() {
       <FadeIn delay={700}>
         <div style={{ marginTop: 64, padding: 32, background: "var(--bg-card)", borderRadius: 10, border: "1px solid var(--border-light)", textAlign: "center" }}>
           <p style={{ fontFamily: "var(--serif)", fontSize: 20, fontWeight: 400, color: "var(--text)", marginBottom: 10 }}>Want to work together?</p>
-          <p style={{ fontFamily: "var(--body)", fontSize: 14.5, color: "var(--text-tertiary)", fontWeight: 300, marginBottom: 20 }}>I'm always open to conversations about product, systems, or ideas worth exploring.</p>
+          <p style={{ fontFamily: "var(--body)", fontSize: 14.5, color: "var(--text-tertiary)", fontWeight: 400, marginBottom: 20 }}>I'm always open to conversations about product, systems, or ideas worth exploring.</p>
           <a href="mailto:yatin.choudhary1@gmail.com" onClick={e => { navigator.clipboard.writeText("yatin.choudhary1@gmail.com"); const t = document.createElement("div"); t.textContent = "Email copied to clipboard"; Object.assign(t.style, { position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)", background: "var(--text)", color: "var(--bg)", fontFamily: "var(--mono)", fontSize: "12px", padding: "10px 20px", borderRadius: "100px", zIndex: 9999, opacity: 0, transition: "opacity 0.3s" }); document.body.appendChild(t); requestAnimationFrame(() => t.style.opacity = 1); setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.remove(), 300); }, 2000); }} className="react-btn" style={{
             fontFamily: "var(--mono)", fontSize: 12, color: "var(--accent)", textDecoration: "none",
             letterSpacing: "0.04em", padding: "10px 24px", border: "1px solid var(--accent)",
@@ -995,7 +995,7 @@ export default function Blog() {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
           --bg: #FDFDFB; --bg-card: #F5F5F2; --text: #1B2021;
-          --text-secondary: #2C3027; --text-tertiary: #7A7E72;
+          --text-secondary: #1F2420; --text-tertiary: #5C6158;
           --accent: #3D6B5E; --tag-bg: rgba(61,107,94,0.09);
           --border: #DDDDD8; --border-light: #EAEAE5; --search-bg: #F0F0EC;
           --serif: 'Cormorant Garamond', Georgia, serif;
@@ -1067,7 +1067,7 @@ export default function Blog() {
           }}>
             <div style={{ background: "var(--bg-card)", borderRadius: 10, padding: "40px 36px", border: "1px solid var(--border-light)" }}>
               <h2 style={{ fontFamily: "var(--serif)", fontSize: 26, fontWeight: 400, marginBottom: 20, color: "var(--text)" }}>Hello.</h2>
-              <div style={{ fontFamily: "var(--body)", fontSize: 15.5, lineHeight: 1.85, color: "var(--text-secondary)", fontWeight: 300 }}>
+              <div style={{ fontFamily: "var(--body)", fontSize: 15.5, lineHeight: 1.85, color: "var(--text-secondary)", fontWeight: 400 }}>
                 <p style={{ marginBottom: 16 }}>I'm Yatin — a product manager in India, building AI-powered compliance systems at ClearTax. My days live at the intersection of messy real-world data, enterprise software, and the humans who have to make sense of it all.</p>
                 <p>This is where I think out loud. Observations, not conclusions.</p>
               </div>
@@ -1105,7 +1105,7 @@ export default function Blog() {
               </FadeIn>
 
               <FadeIn delay={250}>
-                <p style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300, maxWidth: 540, marginBottom: 44 }}>
+                <p style={{ fontFamily: "var(--body)", fontSize: 17, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 400, maxWidth: 540, marginBottom: 44 }}>
                   Short writings on AI, philosophy, systems, and the quiet patterns hiding in plain sight. Not claiming to have answers — just paying close attention.
                 </p>
               </FadeIn>

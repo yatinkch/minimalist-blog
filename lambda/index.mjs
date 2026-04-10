@@ -20,6 +20,32 @@ const headers = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
+// In-memory per-IP rate limiter (persists across warm invocations)
+const RATE_WINDOW_MS = 60_000; // 1 minute
+const RATE_MAX = 30; // max requests per IP per window
+const ipHits = new Map();
+
+// Cleanup stale entries every 2 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of ipHits) {
+    if (now - entry.start > RATE_WINDOW_MS * 2) ipHits.delete(ip);
+  }
+}, 120_000).unref();
+
+function isRateLimited(event) {
+  const sourceIp = event.requestContext?.http?.sourceIp || event.requestContext?.identity?.sourceIp || "unknown";
+  const ipHash = createHash("sha256").update(sourceIp).digest("hex").slice(0, 16);
+  const now = Date.now();
+  const entry = ipHits.get(ipHash);
+  if (!entry || now - entry.start > RATE_WINDOW_MS) {
+    ipHits.set(ipHash, { count: 1, start: now });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_MAX;
+}
+
 export const handler = async (event) => {
   const method = event.httpMethod || event.requestContext?.http?.method;
   const path = event.path || event.rawPath || "";
@@ -27,6 +53,11 @@ export const handler = async (event) => {
   // CORS preflight
   if (method === "OPTIONS") {
     return { statusCode: 200, headers, body: "" };
+  }
+
+  // Rate limit check
+  if (isRateLimited(event)) {
+    return { statusCode: 429, headers, body: JSON.stringify({ error: "Too many requests" }) };
   }
 
   // GET /likes — return all like counts
